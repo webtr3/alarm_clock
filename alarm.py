@@ -1,39 +1,66 @@
 import time
 import winsound
-from tkinter import Tk, StringVar, Label, Entry, Button
+from tkinter import *
 
-box = Tk()
-box.title("Alarm Clock")
-box.geometry("300x420")  
-box.resizable(False, False)
-box.configure(bg="lightblue")
+root = Tk()
+root.title("Alarm Clock")
+root.geometry("300x420")
+root.resizable(False, False)
+root.configure(bg="#b3e5fc")
 
-box2 = StringVar(box)
+alarm_var = StringVar()
+status_var = StringVar()
 
-Label(box, text="Alarm Clock", font=("Arial", 15), bg="lightblue").place(x=90, y=20)
+Label(root, text="Alarm Clock", font=("Segoe UI", 16, "bold"), bg="#b3e5fc").pack(pady=15)
 
-entry = Entry(box, justify="right", textvariable=box2, width=24, font=("Arial", 14), bg="white")
-entry.place(x=15, y=60)
+entry = Entry(root, textvariable=alarm_var, justify="right",
+            font=("Segoe UI", 16), bd=2, relief="groove")
+entry.pack(ipady=5, padx=20, fill="x")
 
-def add_int(text, store: StringVar):
-    store.set(store.get() + text)
+status = Label(root, textvariable=status_var,
+            font=("Segoe UI", 10), bg="#b3e5fc")
+status.pack(pady=5)
+
+def append_text(value):
+    alarm_var.set(alarm_var.get() + value)
+
+def clear():
+    alarm_var.set("")
+
+def check_alarm():
+    while True:
+        current = time.strftime("%I:%M %p")
+        if current == alarm_var.get():
+            winsound.Beep(1000, 1000)
+            status_var.set("Alarm ringing!")
+            break
+        time.sleep(1)
 
 def set_alarm():
-    alarm_time = box2.get()
-    Label(box, text=f"Alarm set for {alarm_time}", font=("Arial", 10), bg="lightblue").place(x=70, y=100)
+    alarm_time = alarm_var.get()
+    if alarm_time:
+        status_var.set(f"Alarm set for {alarm_time}")
+        root.after(1000, check_alarm)
+
+frame = Frame(root, bg="#b3e5fc")
+frame.pack(pady=10)
 
 buttons = [
-    ('1', 40, 150), ('2', 110, 150), ('3', 180, 150),
-    ('4', 40, 200), ('5', 110, 200), ('6', 180, 200),
-    ('7', 40, 250), ('8', 110, 250), ('9', 180, 250),
-    ('0', 110, 300), (':', 250, 150), ('AM', 250, 200), ('PM', 250, 250)
+    ('1','2','3','AM'),
+    ('4','5','6','PM'),
+    ('7','8','9',':'),
+    ('C','0','','')
 ]
 
-for (text, x, y) in buttons:
-    Button(box, height=2, width=5, text=text, font=("Arial", 9), bg="white",
-        command=lambda t=text: add_int(t, box2)).place(x=x, y=y)
+for r, row in enumerate(buttons):
+    for c, val in enumerate(row):
+        if val:
+            action = clear if val == 'C' else lambda v=val: append_text(v)
+            Button(frame, text=val, width=5, height=2,
+                font=("Segoe UI", 10),
+                command=action).grid(row=r, column=c, padx=5, pady=5)
 
-Button(box, height=2, width=10, text="Set Alarm", font=("Arial", 9),
-    bg="white", command=set_alarm).place(x=170, y=302)
+Button(root, text="Set Alarm", font=("Segoe UI", 11, "bold"),
+    width=15, command=set_alarm).pack(pady=10)
 
-box.mainloop()
+root.mainloop()
